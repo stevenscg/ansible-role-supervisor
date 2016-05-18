@@ -1,0 +1,63 @@
+---
+#
+# Ansible Task to install Supervisor
+#
+
+- name: Ensure supervisor directories are ready
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ supervisor_config_dir }}/conf.d"
+    - "{{ supervisor_log_dir }}"
+
+# See: https://github.com/puphpet/puphpet/issues/1492
+- name: Ensure supporting OS packages are installed
+  yum:
+    name: "{{ item }}"
+    state: latest
+    enablerepo: epel
+  with_items:
+    - python-pip
+    - python-meld3
+
+# This backports package may only be required for centos7
+- name: Ensure python-based dependencies are installed (CentOS7)
+  pip:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - backports.ssl-match-hostname
+  when: (ansible_os_family == 'RedHat') and (ansible_distribution_version.split(".")[0] == "7")
+
+- name: Ensure supervisor is installed
+  pip:
+    name: supervisor
+    version: "{{ supervisor_version }}"
+  notify:
+    - Enable supervisor
+    - Restart supervisor
+
+- name: Install supervisor configuration
+  template:
+    src: supervisord.conf.j2
+    dest: /etc/supervisord.conf
+  notify:
+    - Enable supervisor
+    - Restart supervisor
+
+- name: Install supervisor init script
+  template:
+    src: supervisord-init.j2
+    dest: /etc/init.d/supervisord
+
+- name: Set permissions on supervisor init script
+  file:
+    path: /etc/init.d/supervisord
+    mode: 0755
+
+- name: Ensure supervisor is started and enabled at boot
+  service:
+    name: supervisord
+    state: started
+    enabled: yes

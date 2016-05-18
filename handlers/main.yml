@@ -1,0 +1,27 @@
+#
+# Handlers for supervisor
+#
+# @see http://docs.ansible.com/playbooks_intro.html#handlers-running-operations-on-change
+#
+# Notes:
+#  "Notify handlers are always run in the order written."
+#
+---
+
+- name: Enable supervisor
+  service:
+    name: supervisord
+    enabled: yes
+  become: yes
+
+- name: Start supervisor
+  service:
+    name: supervisord
+    state: started
+  become: yes
+
+- name: Restart supervisor
+  service:
+    name: supervisord
+    state: restarted
+  become: yes

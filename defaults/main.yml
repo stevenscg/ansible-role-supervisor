@@ -1,0 +1,11 @@
+#
+# Ansible default variables for supervisor role
+#
+# @see http://docs.ansible.com/playbooks_roles.html#roles
+#
+
+supervisor_version: 3.2.0
+supervisor_bin_dir: /usr/local/bin
+supervisor_config_dir: /etc/supervisor
+supervisor_config_file: /etc/supervisord.conf
+supervisor_log_dir: /var/log/supervisor
